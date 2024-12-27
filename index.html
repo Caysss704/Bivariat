@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Perhitungan Bivariat - Hipotesis</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f5f5f5;
+            color: #333;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .container {
+            background-color: #ffffff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 600px;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        h1 {
+            font-size: 2rem;
+            color: #4CAF50;
+        }
+
+        h2 {
+            font-size: 1.5rem;
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        label {
+            font-size: 1rem;
+            margin: 10px 0 5px;
+            display: block;
+        }
+
+        input {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 20px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+        button {
+            width: 100%;
+            padding: 10px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 1rem;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+
+        .result-section {
+            margin-top: 30px;
+            text-align: center;
+        }
+
+        .result-section p {
+            font-size: 1.2rem;
+        }
+
+        .significance {
+            margin-top: 20px;
+            font-size: 1rem;
+            color: #333;
+            text-align: center;
+        }
+
+        .formula {
+            margin-top: 20px;
+            font-size: 1rem;
+            color: #333;
+            text-align: center;
+        }
+
+        .formula img {
+            max-width: 100%;
+            height: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Perhitungan Bivariat</h1>
+        </header>
+        
+        <section class="form-section">
+            <h2>Masukkan Data</h2>
+            <label for="nilai1">Nilai X (pisahkan dengan koma, contoh: 1,2,3,...):</label>
+            <input type="text" id="nilai1" placeholder="Masukkan nilai X">
+            
+            <label for="nilai2">Nilai Y (pisahkan dengan koma, contoh: 4,5,6,...):</label>
+            <input type="text" id="nilai2" placeholder="Masukkan nilai Y">
+            
+            <button onclick="hitung()">Hitung</button>
+        </section>
+        
+        <section class="result-section">
+            <h2>Hasil Perhitungan</h2>
+            <p id="hasil"></p>
+            <p id="hipotesis"></p>
+        </section>
+
+        <section class="significance">
+            <p><strong>Tingkat Signifikansi:</strong> Jika P-value < 0.05, hipotesis diterima (Hubungan signifikan). Jika P-value > 0.05, hipotesis ditolak (Tidak ada hubungan signifikan).</p>
+        </section>
+
+        <section class="formula">
+            <h2>Rumus Perhitungan</h2>
+            <p><strong>Rumus Korelasi Pearson:</strong></p>
+            <img src="https://latex.codecogs.com/svg.latex?r=\frac{n(\sum%20XY)-(\sum%20X)(\sum%20Y)}{\sqrt{[n(\sum%20X^{2})-(\sum%20X)^{2}][n(\sum%20Y^{2})-(\sum%20Y)^{2}]}}" alt="Rumus Korelasi Pearson">
+
+            <p><strong>Rumus P-Value:</strong></p>
+            <img src="https://latex.codecogs.com/svg.latex?t=\frac{r\sqrt{n-2}}{\sqrt{1-r^{2}}}" alt="Rumus P-Value">
+
+            <p>
+                p\text{-value} = 1 - \text{CDF}(t, n - 2)
+            </p>
+        </section>
+    </div>
+
+    <script>
+        function hitung() {
+            // Ambil nilai input
+            const nilai1 = document.getElementById('nilai1').value.split(',').map(Number);
+            const nilai2 = document.getElementById('nilai2').value.split(',').map(Number);
+            
+            if (nilai1.length !== nilai2.length) {
+                alert("Jumlah data X dan Y harus sama.");
+                return;
+            }
+
+            // Hitung korelasi Pearson
+            let correlation = pearsonCorrelation(nilai1, nilai2);
+            let pValue = calculatePValue(nilai1.length, correlation);
+
+            // Menampilkan hasil perhitungan
+            document.getElementById('hasil').innerHTML = `Korelasi Pearson: ${correlation.toFixed(3)}<br>P-value: ${pValue.toFixed(3)}`;
+
+            // Menentukan hipotesis
+            if (pValue < 0.05) {
+                document.getElementById('hipotesis').innerHTML = "Hipotesis diterima (p < 0.05).";
+            } else {
+                document.getElementById('hipotesis').innerHTML = "Hipotesis ditolak (p > 0.05).";
+            }
+        }
+
+        // Fungsi untuk menghitung korelasi Pearson
+        function pearsonCorrelation(x, y) {
+            let n = x.length;
+            let sumX = x.reduce((a, b) => a + b, 0);
+            let sumY = y.reduce((a, b) => a + b, 0);
+            let sumXY = x.reduce((sum, xi, i) => sum + xi * y[i], 0);
+            let sumX2 = x.reduce((sum, xi) => sum + xi * xi, 0);
+            let sumY2 = y.reduce((sum, yi) => sum + yi * yi, 0);
+
+            let numerator = n * sumXY - sumX * sumY;
+            let denominator = Math.sqrt((n * sumX2 - sumX * sumX) * (n * sumY2 - sumY * sumY));
+            
+            return numerator / denominator;
+        }
+
+        // Fungsi untuk menghitung P-value
+        function calculatePValue(n, r) {
+            let t = r * Math.sqrt((n - 2) / (1 - r * r));
+            let p = 1 - tDistCdf(t, n - 2);
+            return p;
+        }
+
+        // Fungsi distribusi kumulatif t (untuk menghitung P-value)
+        function tDistCdf(t, df) {
+            let a = 0.5 * (1 + Math.sign(t) * Math.sqrt(1 / (1 + df / (df + t * t))));
+            return a;
+        }
+    </script>
+</body>
+</html>
